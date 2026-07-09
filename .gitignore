@@ -1,0 +1,23 @@
+# Credenciales y config sensible
+.env
+
+# Entornos virtuales
+venv/
+env/
+.venv/
+
+# Cache de Python
+__pycache__/
+*.pyc
+
+# Logs
+fastapi.log
+streamlit.log
+.pids
+
+# Jupyter checkpoints
+.ipynb_checkpoints/
+
+# Sistema
+.DS_Store
+downloaded_files/
