@@ -4,7 +4,7 @@ import pandas as pd
 import numpy as np
 from scipy.stats import poisson
 
-API_URL = "http://localhost:8000"
+API_URL = "https://mundial-2026-analytics-production.up.railway.app"
 RONDAS = ["Group stage", "Round of 32", "Round of 16", "Quarterfinal", "Semifinal", "3rd place", "Final"]
 RONDAS_BRACKET = ["Round of 16", "Quarterfinal", "Semifinal", "Final"]
 
