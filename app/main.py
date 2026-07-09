@@ -8,6 +8,15 @@ from .database import get_db
 
 app = FastAPI(title="Mundial 2026 - API de Datos")
 
+from fastapi.middleware.cors import CORSMiddleware
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
 @app.get("/")
 def root():
     return {"status": "ok", "mensaje": "API de datos Mundial 2026"}
