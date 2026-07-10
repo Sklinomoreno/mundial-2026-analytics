@@ -143,7 +143,7 @@ with tab1:
                 "label": {"show": True, "position": "right"},
             }],
         }
-        st.markdown("##### Top 15 equipos por goles (todo el torneo)")
+        st.markdown("##### Top 15 equipos")
         st_echarts(options=opciones_barras, height="420px")
     else:
         st.info("No se pudo cargar el grafico de goles por equipo.")
@@ -413,7 +413,6 @@ def renderizar_tarjeta(p, data_live, home_live, away_live):
 
 with tab2:
     st.subheader("Cuadro del torneo")
-    st.caption("El borde vertical agrupa los partidos que alimentan al siguiente cruce.")
 
     home_live = st.session_state.get("live_home")
     away_live = st.session_state.get("live_away")
