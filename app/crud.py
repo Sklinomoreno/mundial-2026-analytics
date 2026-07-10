@@ -144,3 +144,35 @@ def get_todos_partidos_ronda(db: Session, ronda: str):
         ORDER BY date ASC
     """)
     return db.execute(query, {"ronda": ronda}).mappings().all()
+
+def get_goles_por_equipo(db: Session):
+    query = text("""
+        SELECT team, SUM(goles) AS total_goles
+        FROM jugadores_stats
+        WHERE goles IS NOT NULL
+        GROUP BY team
+        ORDER BY total_goles DESC
+    """)
+    return db.execute(query).mappings().all()
+
+def get_kpis_torneo(db: Session):
+    query = text("""
+        SELECT
+            COUNT(*) FILTER (WHERE score IS NOT NULL AND score != '') AS partidos_jugados,
+            (SELECT COUNT(DISTINCT player) FROM jugadores_stats WHERE goles > 0) AS goleadores_distintos
+        FROM calendario_mundial
+    """)
+    row = db.execute(query).mappings().first()
+
+    query_goles = text("""
+        SELECT SUM(goles) AS total_goles FROM jugadores_stats WHERE goles IS NOT NULL
+    """)
+    total_goles = db.execute(query_goles).scalar() or 0
+
+    partidos = row["partidos_jugados"] or 1
+    return {
+        "partidos_jugados": row["partidos_jugados"],
+        "total_goles": int(total_goles),
+        "promedio_goles_partido": round(total_goles / partidos, 2),
+        "goleadores_distintos": row["goleadores_distintos"],
+    }

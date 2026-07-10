@@ -77,3 +77,12 @@ def top_tarjetas_rojas(limit: int = 10, db: Session = Depends(get_db)):
 @app.get("/bracket/{ronda}")
 def bracket_ronda(ronda: str, db: Session = Depends(get_db)):
     return crud.get_todos_partidos_ronda(db, ronda)
+
+
+@app.get("/goles-por-equipo")
+def goles_por_equipo(db: Session = Depends(get_db)):
+    return crud.get_goles_por_equipo(db)
+
+@app.get("/kpis-torneo")
+def kpis_torneo(db: Session = Depends(get_db)):
+    return crud.get_kpis_torneo(db)

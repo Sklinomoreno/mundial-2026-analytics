@@ -1,6 +1,7 @@
 import streamlit as st
 import requests
 import pandas as pd
+from streamlit_echarts import st_echarts
 import numpy as np
 from scipy.stats import poisson
 
@@ -110,6 +111,44 @@ CATEGORIAS = {
 
 # ================= TAB 1: STATS =================
 with tab1:
+    st.subheader("Analitica general")
+
+    resp_kpi = requests.get(f"{API_URL}/kpis-torneo")
+    if resp_kpi.status_code == 200:
+        kpis = resp_kpi.json()
+        k1, k2, k3, k4 = st.columns(4)
+        k1.metric("Partidos jugados", kpis["partidos_jugados"])
+        k2.metric("Goles totales", kpis["total_goles"])
+        k3.metric("Goles por partido", kpis["promedio_goles_partido"])
+        k4.metric("Goleadores distintos", kpis["goleadores_distintos"])
+
+    resp_barras = requests.get(f"{API_URL}/goles-por-equipo")
+    if resp_barras.status_code == 200 and resp_barras.json():
+        data_eq = [d for d in resp_barras.json() if d.get("total_goles")]
+        data_eq = sorted(data_eq, key=lambda d: d["total_goles"], reverse=True)[:15]
+        data_eq = list(reversed(data_eq))  # para que el mayor quede arriba en barra horizontal
+
+        equipos = [d["team"] for d in data_eq]
+        valores = [int(d["total_goles"]) for d in data_eq]
+
+        opciones_barras = {
+            "tooltip": {"trigger": "axis", "axisPointer": {"type": "shadow"}},
+            "grid": {"left": "20%", "right": "5%", "top": "5%", "bottom": "5%"},
+            "xAxis": {"type": "value"},
+            "yAxis": {"type": "category", "data": equipos},
+            "series": [{
+                "type": "bar",
+                "data": valores,
+                "itemStyle": {"color": "#3b82f6"},
+                "label": {"show": True, "position": "right"},
+            }],
+        }
+        st.markdown("##### Top 15 equipos por goles (todo el torneo)")
+        st_echarts(options=opciones_barras, height="420px")
+    else:
+        st.info("No se pudo cargar el grafico de goles por equipo.")
+
+    st.divider()
     st.subheader("Estadísticas de jugadores")
     col_cat, col_limit = st.columns([2, 1])
     categoria = col_cat.selectbox("Categoría", list(CATEGORIAS.keys()))

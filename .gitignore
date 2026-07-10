@@ -21,3 +21,4 @@ streamlit.log
 # Sistema
 .DS_Store
 downloaded_files/
+*.dump
