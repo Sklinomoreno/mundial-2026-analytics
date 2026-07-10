@@ -163,8 +163,7 @@ with tab1:
                     "type": "pie",
                     "radius": ["40%", "70%"],
                     "data": donut_data,
-                    "label": {"formatter": "{b}
-{c}"},
+                    "label": {"formatter": "{b}\n{c}"},
                 }],
             }
             st.markdown("##### Goles por ronda")
