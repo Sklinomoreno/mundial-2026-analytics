@@ -199,3 +199,63 @@ def get_eficiencia_equipos(db: Session, limit: int = 20):
         LIMIT :limit
     """)
     return db.execute(query, {"limit": limit}).mappings().all()
+
+def get_stats_promedio_equipos(db: Session, equipos: list):
+    resultados = []
+    for equipo in equipos:
+        query = text("""
+            WITH por_partido AS (
+                SELECT game_id,
+                       SUM(goles) AS goles, SUM(tiros) AS tiros, SUM(tiros_arco) AS tiros_arco,
+                       SUM(tarjetas_amarillas) AS tarjetas_amarillas, SUM(tarjetas_rojas) AS tarjetas_rojas
+                FROM jugadores_stats
+                WHERE team = :equipo
+                GROUP BY game_id
+            )
+            SELECT
+                COUNT(*) AS partidos,
+                AVG(goles) AS avg_goles, AVG(tiros) AS avg_tiros, AVG(tiros_arco) AS avg_tiros_arco,
+                AVG(tarjetas_amarillas) AS avg_amarillas, AVG(tarjetas_rojas) AS avg_rojas
+            FROM por_partido
+        """)
+        row = db.execute(query, {"equipo": equipo}).mappings().first()
+        if row and row["partidos"]:
+            resultados.append({
+                "team": equipo, "partidos": row["partidos"],
+                "avg_goles": round(float(row["avg_goles"] or 0), 2),
+                "avg_tiros": round(float(row["avg_tiros"] or 0), 2),
+                "avg_tiros_arco": round(float(row["avg_tiros_arco"] or 0), 2),
+                "avg_amarillas": round(float(row["avg_amarillas"] or 0), 2),
+                "avg_rojas": round(float(row["avg_rojas"] or 0), 2),
+            })
+    return resultados
+
+def get_stats_promedio_equipos(db: Session, equipos: list):
+    resultados = []
+    for equipo in equipos:
+        query = text("""
+            WITH por_partido AS (
+                SELECT game_id,
+                       SUM(goles) AS goles, SUM(tiros) AS tiros, SUM(tiros_arco) AS tiros_arco,
+                       SUM(tarjetas_amarillas) AS tarjetas_amarillas, SUM(tarjetas_rojas) AS tarjetas_rojas
+                FROM jugadores_stats
+                WHERE team = :equipo
+                GROUP BY game_id
+            )
+            SELECT
+                COUNT(*) AS partidos,
+                AVG(goles) AS avg_goles, AVG(tiros) AS avg_tiros, AVG(tiros_arco) AS avg_tiros_arco,
+                AVG(tarjetas_amarillas) AS avg_amarillas, AVG(tarjetas_rojas) AS avg_rojas
+            FROM por_partido
+        """)
+        row = db.execute(query, {"equipo": equipo}).mappings().first()
+        if row and row["partidos"]:
+            resultados.append({
+                "team": equipo, "partidos": row["partidos"],
+                "avg_goles": round(float(row["avg_goles"] or 0), 2),
+                "avg_tiros": round(float(row["avg_tiros"] or 0), 2),
+                "avg_tiros_arco": round(float(row["avg_tiros_arco"] or 0), 2),
+                "avg_amarillas": round(float(row["avg_amarillas"] or 0), 2),
+                "avg_rojas": round(float(row["avg_rojas"] or 0), 2),
+            })
+    return resultados

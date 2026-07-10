@@ -95,3 +95,9 @@ def goles_por_ronda(db: Session = Depends(get_db)):
 @app.get("/eficiencia-equipos")
 def eficiencia_equipos(limit: int = 20, db: Session = Depends(get_db)):
     return crud.get_eficiencia_equipos(db, limit)
+
+
+@app.get("/stats-promedio-equipos")
+def stats_promedio_equipos(equipos: str, db: Session = Depends(get_db)):
+    lista_equipos = [e.strip() for e in equipos.split(",") if e.strip()]
+    return crud.get_stats_promedio_equipos(db, lista_equipos)

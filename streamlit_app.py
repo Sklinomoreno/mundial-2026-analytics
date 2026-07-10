@@ -201,6 +201,76 @@ with tab1:
             st_echarts(options=opciones_scatter, height="380px")
 
     st.divider()
+    st.subheader("Equipos en Cuartos de Final")
+
+    EQUIPOS_CUARTOS = ["France", "Morocco", "Spain", "Belgium", "Norway", "England", "Argentina", "Switzerland"]
+    equipos_param = ",".join(EQUIPOS_CUARTOS)
+    resp_qf = requests.get(f"{API_URL}/stats-promedio-equipos", params={"equipos": equipos_param})
+
+    if resp_qf.status_code == 200 and resp_qf.json():
+        data_qf = resp_qf.json()
+        st.caption("Corners y faltas no se muestran: no se guardan historicamente por equipo, solo durante el analisis en vivo.")
+
+        col_bar, col_radar = st.columns(2)
+
+        with col_bar:
+            data_ordenada = sorted(data_qf, key=lambda d: d["avg_goles"], reverse=True)
+            equipos_nombres = [d["team"] for d in reversed(data_ordenada)]
+            valores_goles = [d["avg_goles"] for d in reversed(data_ordenada)]
+
+            opciones_bar_qf = {
+                "tooltip": {"trigger": "axis", "axisPointer": {"type": "shadow"}},
+                "grid": {"left": "25%", "right": "10%"},
+                "xAxis": {"type": "value", "name": "Goles/partido"},
+                "yAxis": {"type": "category", "data": equipos_nombres},
+                "series": [{
+                    "type": "bar", "data": valores_goles,
+                    "itemStyle": {"color": "#3b82f6"}, "label": {"show": True, "position": "right"},
+                }],
+            }
+            st.markdown("##### Promedio de goles por partido")
+            st_echarts(options=opciones_bar_qf, height="360px")
+
+        with col_radar:
+            max_goles = max((d["avg_goles"] for d in data_qf), default=1) or 1
+            max_tiros = max((d["avg_tiros"] for d in data_qf), default=1) or 1
+            max_tiros_arco = max((d["avg_tiros_arco"] for d in data_qf), default=1) or 1
+            max_amarillas = max((d["avg_amarillas"] for d in data_qf), default=1) or 1
+            max_rojas = max((d["avg_rojas"] for d in data_qf), default=0.5) or 0.5
+
+            indicadores = [
+                {"name": "Goles", "max": round(max_goles * 1.2, 1)},
+                {"name": "Remates", "max": round(max_tiros * 1.2, 1)},
+                {"name": "Remates al arco", "max": round(max_tiros_arco * 1.2, 1)},
+                {"name": "Tarjetas amarillas", "max": round(max_amarillas * 1.2, 1)},
+                {"name": "Tarjetas rojas", "max": round(max_rojas * 1.2 + 0.5, 1)},
+            ]
+
+            colores = ["#3b82f6", "#ef4444", "#22c55e", "#eab308", "#a855f7", "#06b6d4", "#f97316", "#ec4899"]
+            series_radar = []
+            for i, d in enumerate(data_qf):
+                series_radar.append({
+                    "value": [d["avg_goles"], d["avg_tiros"], d["avg_tiros_arco"], d["avg_amarillas"], d["avg_rojas"]],
+                    "name": d["team"],
+                    "lineStyle": {"color": colores[i % len(colores)]},
+                    "itemStyle": {"color": colores[i % len(colores)]},
+                    "areaStyle": {"opacity": 0.05},
+                })
+
+            opciones_radar = {
+                "tooltip": {},
+                "legend": {"bottom": "0%", "textStyle": {"color": "#ccc"}, "type": "scroll"},
+                "radar": {"indicator": indicadores, "radius": "60%"},
+                "series": [{"type": "radar", "data": series_radar}],
+            }
+            st.markdown("##### Perfil comparativo (los 8 equipos)")
+            st_echarts(options=opciones_radar, height="400px")
+
+        st.dataframe(pd.DataFrame(data_qf), use_container_width=True, hide_index=True)
+    else:
+        st.info("No hay suficientes datos todavia para los equipos de cuartos.")
+
+    st.divider()
     st.subheader("Estadísticas de jugadores")
     col_cat, col_limit = st.columns([2, 1])
     categoria = col_cat.selectbox("Categoría", list(CATEGORIAS.keys()))
