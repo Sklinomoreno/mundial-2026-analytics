@@ -86,3 +86,12 @@ def goles_por_equipo(db: Session = Depends(get_db)):
 @app.get("/kpis-torneo")
 def kpis_torneo(db: Session = Depends(get_db)):
     return crud.get_kpis_torneo(db)
+
+
+@app.get("/goles-por-ronda")
+def goles_por_ronda(db: Session = Depends(get_db)):
+    return crud.get_goles_por_ronda(db)
+
+@app.get("/eficiencia-equipos")
+def eficiencia_equipos(limit: int = 20, db: Session = Depends(get_db)):
+    return crud.get_eficiencia_equipos(db, limit)

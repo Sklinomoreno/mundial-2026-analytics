@@ -148,6 +148,53 @@ with tab1:
     else:
         st.info("No se pudo cargar el grafico de goles por equipo.")
 
+    col_donut, col_scatter = st.columns(2)
+
+    with col_donut:
+        resp_ronda = requests.get(f"{API_URL}/goles-por-ronda")
+        if resp_ronda.status_code == 200 and resp_ronda.json():
+            data_ronda = [d for d in resp_ronda.json() if d.get("total_goles") and d.get("round")]
+            donut_data = [{"name": d["round"], "value": int(d["total_goles"])} for d in data_ronda]
+
+            opciones_donut = {
+                "tooltip": {"trigger": "item", "formatter": "{b}: {c} goles ({d}%)"},
+                "legend": {"bottom": "0%", "textStyle": {"color": "#ccc"}},
+                "series": [{
+                    "type": "pie",
+                    "radius": ["40%", "70%"],
+                    "data": donut_data,
+                    "label": {"formatter": "{b}
+{c}"},
+                }],
+            }
+            st.markdown("##### Goles por ronda")
+            st_echarts(options=opciones_donut, height="380px")
+
+    with col_scatter:
+        resp_efic = requests.get(f"{API_URL}/eficiencia-equipos", params={"limit": 20})
+        if resp_efic.status_code == 200 and resp_efic.json():
+            data_efic = resp_efic.json()
+            scatter_data = [
+                [int(d["total_tiros"]), int(d["total_goles"]), int(d["total_tiros_arco"]), d["team"]]
+                for d in data_efic if d.get("total_tiros")
+            ]
+
+            opciones_scatter = {
+                "tooltip": {
+                    "formatter": "function(p){return p.data[3]+'<br/>Remates: '+p.data[0]+'<br/>Goles: '+p.data[1];}"
+                },
+                "xAxis": {"name": "Remates totales", "nameLocation": "middle", "nameGap": 30},
+                "yAxis": {"name": "Goles", "nameLocation": "middle", "nameGap": 30},
+                "series": [{
+                    "type": "scatter",
+                    "data": scatter_data,
+                    "symbolSize": "function(d){return Math.max(8, d[2]/2);}",
+                    "itemStyle": {"color": "#3b82f6", "opacity": 0.75},
+                }],
+            }
+            st.markdown("##### Eficiencia: remates vs goles por equipo (tamaño = remates al arco)")
+            st_echarts(options=opciones_scatter, height="380px")
+
     st.divider()
     st.subheader("Estadísticas de jugadores")
     col_cat, col_limit = st.columns([2, 1])

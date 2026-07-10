@@ -176,3 +176,26 @@ def get_kpis_torneo(db: Session):
         "promedio_goles_partido": round(total_goles / partidos, 2),
         "goleadores_distintos": row["goleadores_distintos"],
     }
+
+def get_goles_por_ronda(db: Session):
+    query = text("""
+        SELECT c.round, SUM(j.goles) AS total_goles
+        FROM jugadores_stats j
+        JOIN calendario_mundial c ON j.game_id = c.game_id
+        WHERE j.goles IS NOT NULL
+        GROUP BY c.round
+        ORDER BY total_goles DESC
+    """)
+    return db.execute(query).mappings().all()
+
+def get_eficiencia_equipos(db: Session, limit: int = 20):
+    query = text("""
+        SELECT team, SUM(tiros) AS total_tiros, SUM(tiros_arco) AS total_tiros_arco, SUM(goles) AS total_goles
+        FROM jugadores_stats
+        WHERE tiros IS NOT NULL AND goles IS NOT NULL
+        GROUP BY team
+        HAVING SUM(tiros) > 0
+        ORDER BY total_goles DESC
+        LIMIT :limit
+    """)
+    return db.execute(query, {"limit": limit}).mappings().all()
