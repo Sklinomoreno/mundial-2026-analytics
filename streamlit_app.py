@@ -173,25 +173,31 @@ with tab1:
         resp_efic = requests.get(f"{API_URL}/eficiencia-equipos", params={"limit": 20})
         if resp_efic.status_code == 200 and resp_efic.json():
             data_efic = resp_efic.json()
-            scatter_data = [
-                [int(d["total_tiros"]), int(d["total_goles"]), int(d["total_tiros_arco"]), d["team"]]
-                for d in data_efic if d.get("total_tiros")
-            ]
+            scatter_data = []
+            for d in data_efic:
+                if not d.get("total_tiros"):
+                    continue
+                tiros = int(d["total_tiros"])
+                goles = int(d["total_goles"])
+                tiros_arco = int(d["total_tiros_arco"] or 0)
+                tamano = max(10, min(60, tiros_arco))
+                scatter_data.append({
+                    "name": d["team"],
+                    "value": [tiros, goles],
+                    "symbolSize": tamano,
+                })
 
             opciones_scatter = {
-                "tooltip": {
-                    "formatter": "function(p){return p.data[3]+'<br/>Remates: '+p.data[0]+'<br/>Goles: '+p.data[1];}"
-                },
+                "tooltip": {"formatter": "{b}: {c}"},
                 "xAxis": {"name": "Remates totales", "nameLocation": "middle", "nameGap": 30},
                 "yAxis": {"name": "Goles", "nameLocation": "middle", "nameGap": 30},
                 "series": [{
                     "type": "scatter",
                     "data": scatter_data,
-                    "symbolSize": "function(d){return Math.max(8, d[2]/2);}",
                     "itemStyle": {"color": "#3b82f6", "opacity": 0.75},
                 }],
             }
-            st.markdown("##### Eficiencia: remates vs goles por equipo (tamaño = remates al arco)")
+            st.markdown("##### Eficiencia: remates vs goles por equipo (tamano = remates al arco)")
             st_echarts(options=opciones_scatter, height="380px")
 
     st.divider()
