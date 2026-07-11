@@ -7,7 +7,7 @@ def get_partidos_proximos(db: Session, limit: int = 10):
                home_team, away_team, score, venue, referee, attendance
         FROM calendario_mundial
         WHERE date >= CURRENT_DATE
-        ORDER BY date ASC
+        ORDER BY date ASC, id ASC
         LIMIT :limit
     """)
     return db.execute(query, {"limit": limit}).mappings().all()
@@ -27,7 +27,7 @@ def get_partidos_por_equipo(db: Session, equipo: str, limit: int = 10):
                home_team, away_team, score, venue, referee, attendance
         FROM calendario_mundial
         WHERE home_team ILIKE :equipo OR away_team ILIKE :equipo
-        ORDER BY date ASC
+        ORDER BY date ASC, id ASC
         LIMIT :limit
     """)
     return db.execute(query, {"equipo": f"%{equipo}%", "limit": limit}).mappings().all()
@@ -88,7 +88,7 @@ def get_partidos_por_ronda(db: Session, ronda: str):
         SELECT game_id, home_team, away_team, round
         FROM calendario_mundial
         WHERE round = :ronda AND game_id IS NOT NULL AND game_id != ''
-        ORDER BY date ASC
+        ORDER BY date ASC, id ASC
     """)
     return db.execute(query, {"ronda": ronda}).mappings().all()
 
@@ -98,7 +98,7 @@ def get_partidos_por_ronda(db: Session, ronda: str):
         SELECT game_id, home_team, away_team, round
         FROM calendario_mundial
         WHERE round ILIKE :ronda AND game_id IS NOT NULL AND game_id != ''
-        ORDER BY date ASC
+        ORDER BY date ASC, id ASC
     """)
     return db.execute(query, {"ronda": ronda}).mappings().all()
 
@@ -138,10 +138,10 @@ def get_top_tarjetas_rojas(db: Session, limit: int = 10):
 
 def get_todos_partidos_ronda(db: Session, ronda: str):
     query = text("""
-        SELECT home_team, away_team, score, date, game_id
+        SELECT id, home_team, away_team, score, date, game_id
         FROM calendario_mundial
         WHERE round = :ronda
-        ORDER BY date ASC
+        ORDER BY date ASC, id ASC
     """)
     return db.execute(query, {"ronda": ronda}).mappings().all()
 
