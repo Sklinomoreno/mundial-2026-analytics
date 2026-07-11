@@ -44,6 +44,7 @@ def main():
 
     correr_script("cerrar_partidos_pendientes.py")
     correr_script("sync_calendario.py")
+    correr_script("sync_bracket.py")
     correr_script("sync_partidos_faltantes.py")
     correr_script("sync_goleadores.py")
 
