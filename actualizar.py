@@ -6,24 +6,40 @@ import subprocess
 import sys
 import time
 import os
+import logging
 
 PROYECTO_DIR = os.path.dirname(os.path.abspath(__file__))
+
+os.makedirs(os.path.join(PROYECTO_DIR, "logs"), exist_ok=True)
+logging.basicConfig(
+    filename=os.path.join(PROYECTO_DIR, "logs", "sync.log"),
+    level=logging.INFO,
+    format="%(asctime)s [%(levelname)s] %(message)s",
+)
 
 def correr_script(nombre_script):
     print(f"\n{'='*60}")
     print(f"Corriendo: {nombre_script}")
     print(f"{'='*60}\n")
+
+    inicio = time.time()
     resultado = subprocess.run(
         [sys.executable, nombre_script],
         cwd=PROYECTO_DIR,
     )
+    duracion = round(time.time() - inicio, 2)
+
     if resultado.returncode != 0:
+        logging.error(f"{nombre_script} FALLÓ (código {resultado.returncode}, {duracion}s)")
         print(f"\n⚠️  {nombre_script} terminó con error (código {resultado.returncode}).")
         respuesta = input("¿Continuar con el resto de todas formas? (s/n): ")
         if respuesta.lower() != "s":
             sys.exit(1)
+    else:
+        logging.info(f"{nombre_script} OK ({duracion}s)")
 
 def main():
+    logging.info("=== INICIO actualizar.py ===")
     print("Actualizando calendario, jugadores faltantes y goleadores...\n")
 
     correr_script("cerrar_partidos_pendientes.py")
@@ -31,6 +47,7 @@ def main():
     correr_script("sync_partidos_faltantes.py")
     correr_script("sync_goleadores.py")
 
+    logging.info("=== FIN actualizar.py (sincronización completa) ===")
     print(f"\n{'='*60}")
     print("Sincronización de datos completa.")
     print(f"{'='*60}\n")

@@ -22,3 +22,5 @@ streamlit.log
 .DS_Store
 downloaded_files/
 *.dump
+*.log
+logs/
