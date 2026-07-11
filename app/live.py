@@ -88,21 +88,18 @@ def obtener_estado_vivo(match_id):
     }
 
 def obtener_prediccion_guardada(home_es, away_es):
-    conn = psycopg2.connect(
-        host=os.getenv("DB_HOST"), port=os.getenv("DB_PORT"),
-        dbname=os.getenv("DB_NAME"), user=os.getenv("DB_USER"),
-        password=os.getenv("DB_PASSWORD"),
-    )
-    cur = conn.cursor()
-    cur.execute("""
-        SELECT lambda_tarjetas, lambda_faltas, detalle
-        FROM predicciones
-        WHERE (home_team = %s AND away_team = %s) OR (home_team = %s AND away_team = %s)
-        ORDER BY fecha_prediccion DESC LIMIT 1
-    """, (home_es, away_es, away_es, home_es))
-    row = cur.fetchone()
-    cur.close()
-    conn.close()
+    from app.database import engine
+    from sqlalchemy import text
+
+    with engine.connect() as conn:
+        resultado = conn.execute(text("""
+            SELECT lambda_tarjetas, lambda_faltas, detalle
+            FROM predicciones
+            WHERE (home_team = :h AND away_team = :a) OR (home_team = :a2 AND away_team = :h2)
+            ORDER BY fecha_prediccion DESC LIMIT 1
+        """), {"h": home_es, "a": away_es, "a2": home_es, "h2": away_es})
+        row = resultado.fetchone()
+
     if not row:
         return None
     lambda_tarjetas, lambda_faltas, detalle = row
