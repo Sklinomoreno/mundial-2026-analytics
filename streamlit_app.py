@@ -580,6 +580,18 @@ with tab4:
         else:
             st.info("Ninguno de los cuartos restantes esta en vivo todavia.")
 
+    if "live_home_default" not in st.session_state:
+        st.session_state["live_home_default"], st.session_state["live_away_default"] = PROXIMOS_CUARTOS[0]
+        for h, a in PROXIMOS_CUARTOS:
+            r = requests.get(f"{API_URL}/live", params={"home": h, "away": a})
+            if r.status_code == 200:
+                d = r.json()
+                if not d.get("error"):
+                    st.session_state["live_home_default"] = h
+                    st.session_state["live_away_default"] = a
+                    if not d.get("finalizado"):
+                        break
+
     col_a, col_b = st.columns(2)
     default_home = st.session_state.get("live_home_default", "Francia")
     default_away = st.session_state.get("live_away_default", "Marruecos")
