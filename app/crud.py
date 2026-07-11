@@ -136,19 +136,6 @@ def get_top_tarjetas_rojas(db: Session, limit: int = 10):
     """)
     return db.execute(query, {"limit": limit}).mappings().all()
 
-ORDEN_BRACKET = {
-    "Round of 16": [
-        ("Canada", "Morocco"), ("Paraguay", "France"),
-        ("Portugal", "Spain"), ("United States", "Belgium"),
-        ("Mexico", "England"), ("Brazil", "Norway"),
-        ("Switzerland", "Colombia"), ("Argentina", "Egypt"),
-    ],
-    "Quarterfinal": [
-        ("France", "Morocco"), ("Spain", "Belgium"),
-        ("Norway", "England"), ("Argentina", "Switzerland"),
-    ],
-}
-
 def get_todos_partidos_ronda(db: Session, ronda: str):
     query = text("""
         SELECT id, home_team, away_team, score, date, game_id
@@ -156,17 +143,7 @@ def get_todos_partidos_ronda(db: Session, ronda: str):
         WHERE round = :ronda
         ORDER BY date ASC, id ASC
     """)
-    partidos = db.execute(query, {"ronda": ronda}).mappings().all()
-
-    orden = ORDEN_BRACKET.get(ronda)
-    if not orden:
-        return partidos
-
-    def indice(p):
-        par = (p["home_team"], p["away_team"])
-        return orden.index(par) if par in orden else 999
-
-    return sorted(partidos, key=indice)
+    return db.execute(query, {"ronda": ronda}).mappings().all()
 
 def get_goles_por_equipo(db: Session):
     query = text("""
